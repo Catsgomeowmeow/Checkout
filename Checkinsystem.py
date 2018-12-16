@@ -11,6 +11,7 @@ now = datetime.datetime.now()
 LARGE_FONT = ("Verdana", 12)
 import tkinter as tk
 from tkinter import ttk,Entry,StringVar, Tk,Label,Button,Entry,IntVar,W,END,Toplevel,LEFT,RIGHT,BOTTOM,TOP
+import os
 # import argparse
 # import datetime
 # import imutils
@@ -23,15 +24,15 @@ scope = ['https://spreadsheets.google.com/feeds',
 creds = ServiceAccountCredentials.from_json_keyfile_name(r'C:\Users\Isamu Naets\Downloads\Checkout-7aea39f71095.json', scope)
 client = gspread.authorize(creds)
 
-# Find a workbook by name and open the first sheet
-# Make sure you use the right name here.
+ # Find a workbook by name and open the first sheet
+ # Make sure you use the right name here.
 sheet = client.open("Laptops").sheet1
 ##########################################################################################################################
 
 def cardreader2():
     # construct the argument parser and parse the arguments
     # load the input image
-    image = cv2.imread(r'C:\Users\Isamu Naets\Pictures\qr.png')
+    image = cv2.imread('qr.png')
 
     # find the barcodes in the image and decode each of the barcodes
     barcodes = pyzbar.decode(image)
@@ -88,10 +89,33 @@ def scanner_id():
             break
         elif k%256 == 32:
             # SPACE pressed
-            img_name = "ID .png"
+            img_name = "ID.png"
             y = cv2.imwrite(img_name, frame)
             x = 2
 
+def scanner_qr():
+    cam = cv2.VideoCapture(0)
+
+    cv2.namedWindow("QR Scan")
+
+    img_counter = 0
+    x = 1
+    while x == 1:
+        ret, frame = cam.read()
+        cv2.imshow("test", frame)
+        if not ret:
+            break
+        k = cv2.waitKey(1)
+
+        if k % 256 == 27:
+            # ESC pressed
+            print("Escape hit, closing...")
+            break
+        elif k % 256 == 32:
+            # SPACE pressed
+            img_name = "qr.png"
+            y = cv2.imwrite(img_name, frame)
+            x = 2
 
         # scanner()
 # name = cardreader()
@@ -147,11 +171,11 @@ class checkout(tk.Frame):
         global id, name_id
         ##############################################################################################################
         def cardreader():
-
+            scanner_id()
             # construct the argument parser and parse the arguments
             # load the input image
             global name , name_id
-            image = cv2.imread(r'C:\Users\Isamu Naets\Pictures\ID.png')
+            image = cv2.imread('ID.png')
 
             # find the barcodes in the image and decode each of the barcodes
             barcodes = pyzbar.decode(image)
@@ -195,10 +219,11 @@ class checkout(tk.Frame):
             scanPC.pack()
             ############################################################################################################
             def qrin2():
+                scanner_qr()
                 # construct the argument parser and parse the arguments
                 # load the input image
                 global laptop,name_id
-                image = cv2.imread(r'C:\Users\Isamu Naets\Pictures\qr.png')
+                image = cv2.imread('qr.png')
 
                 # find the barcodes in the image and decode each of the barcodes
                 barcodes = pyzbar.decode(image)
@@ -247,6 +272,8 @@ class checkout(tk.Frame):
             print(today)
             sheet.update_cell(x._row,5,today)
             sheet.update_cell(x.row,4,'')
+            os.remove("ID.png")
+            os.remove("qr.png")
             controller.destroy()
 
         label = tk.Label(self, text="Check out a laptop", font=LARGE_FONT)
@@ -278,10 +305,11 @@ class CheckIn(tk.Frame):
         global id ,name_idin
         ##############################################################################################################
         def cardreader():
+            scanner_id()
             # construct the argument parser and parse the arguments
             # load the input image
             global name ,name_idin
-            image = cv2.imread(r'C:\Users\Isamu Naets\Pictures\ID.png')
+            image = cv2.imread('ID.png')
 
             # find the barcodes in the image and decode each of the barcodes
             barcodes = pyzbar.decode(image)
@@ -325,10 +353,11 @@ class CheckIn(tk.Frame):
             scanPC.pack()
             ############################################################################################################
             def qrin2():
+                scanner_qr()
                 # construct the argument parser and parse the arguments
                 # load the input image
                 global laptop ,name_idin
-                image = cv2.imread(r'C:\Users\Isamu Naets\Pictures\qr.png')
+                image = cv2.imread('qr.png')
 
                 # find the barcodes in the image and decode each of the barcodes
                 barcodes = pyzbar.decode(image)
@@ -373,6 +402,8 @@ class CheckIn(tk.Frame):
             sheet.update_cell(x._row,3,name_idin +'(returned)')
             print(today)
             sheet.update_cell(x._row,4,today)
+            os.remove("ID.png")
+            os.remove("qr.png")
             controller.destroy()
 
         label = tk.Label(self, text="Return a laptop", font=LARGE_FONT)
